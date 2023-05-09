@@ -1,6 +1,6 @@
-FROM debian:latest
+FROM alpine:latest as builder
 
-RUN apt-get update && apt-get install -y build-essential wget && \
+RUN apk update && apk add --no-cache build-base make wget && \
 wget https://nginx.org/download/nginx-1.15.9.tar.gz && \
 mkdir /nginx && \
 tar zxf nginx-1.15.9.tar.gz && mv nginx-1.15.9/* /nginx && \
@@ -12,3 +12,8 @@ cd /nginx && \
 --without-http_rewrite_module \
 --without-http_gzip_module && \
 make && make install
+
+FROM alpine:latest
+COPY --from=builder /usr/local/nginx /usr/local/nginx
+EXPOSE 80
+CMD ["/usr/local/nginx/nginx", "-g", "daemon off;"]
